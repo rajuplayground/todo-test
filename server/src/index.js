@@ -2,9 +2,11 @@ import express from 'express'
 import todoRouter from './todoRouter.js'
 import morgan from 'morgan'
 import bodyParser from 'body-parser'
+import cors from 'cors'
 
 const app = express()
 
+app.use(cors())
 app.use(express.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.use(morgan('combined'))
