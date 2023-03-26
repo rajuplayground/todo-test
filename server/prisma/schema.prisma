@@ -20,5 +20,4 @@ model Todo {
 enum TodoStatus {
   PENDING
   DONE
-  REMOVED
 }
