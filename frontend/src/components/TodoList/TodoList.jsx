@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import TodoAdd from "./components/TodoAdd";
-import TodoItem from "./components/TodoItem";
+import TodoAdd from "../TodoAdd";
 import ReactModal from "react-modal";
-import { X } from "react-feather";
+import TodoListItems from "../TodoListItems";
+import TodoUpdate from "../TodoUpdate";
+import DialogWrapper from "../DialogWrapper";
 
 function TodoList() {
   const [items, setItems] = useState([]);
@@ -71,26 +72,6 @@ function TodoList() {
     }
   }
 
-  // async function editItem(index, newValue) {
-  //   const todo = items[index];
-  //   const updatedTodo = { ...todo, todo: newValue };
-
-  //   const response = await fetch(`http://localhost:4000/todos/${todo.id}`, {
-  //     method: 'PUT',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify(updatedTodo)
-  //   });
-
-  //   if (response.ok) {
-  //     const updatedTodoFromServer = await response.json();
-  //     setItems(prevItems => {
-  //       const newItems = [...prevItems];
-  //       newItems[index] = updatedTodoFromServer;
-  //       return newItems;
-  //     });
-  //   }
-  // }
-
   async function editItem(index) {
     const editTodo = items[index];
     setEditIndex(index);
@@ -100,6 +81,10 @@ function TodoList() {
 
   async function updateTodo(e) {
     e.preventDefault();
+    if (updateItem.todo.trim() === "") {
+      return;
+    }
+
     const index = editIndex;
 
     const response = await fetch(
@@ -131,20 +116,12 @@ function TodoList() {
   return (
     <div className="container max-width-wrapper">
       <TodoAdd addItem={addItem} />
-      <div className="todo__items">
-        <ul className="todo__list">
-          {items.map((item, index) => (
-            <TodoItem
-              key={item.id}
-              item={item}
-              index={index}
-              toggleItemStatus={toggleItemStatus}
-              editItem={editItem}
-              deleteItem={deleteItem}
-            />
-          ))}
-        </ul>
-      </div>
+      <TodoListItems
+        items={items}
+        toggleItemStatus={toggleItemStatus}
+        editItem={editItem}
+        deleteItem={deleteItem}
+      />
       {updateItem && (
         <ReactModal
           isOpen={showModal}
@@ -152,27 +129,13 @@ function TodoList() {
           contentLabel="Modal"
           className="dialogModal"
         >
-          <div className="dialog">
-            <h2 className="dialog-heading">Update Todo</h2>
-            <form className="todo_input" onSubmit={updateTodo}>
-              <input
-                type="text"
-                value={updateItem.todo}
-                onChange={(e) =>
-                  setUpdateItem((val) => {
-                    return { ...val, todo: e.target.value };
-                  })
-                }
-                placeholder="Add new item"
-              />
-              <button type="submit" className="btn add">
-                Update
-              </button>
-            </form>
-            <button className="image-btn dialogClose" onClick={closeModal}>
-              <X />
-            </button>
-          </div>
+          <DialogWrapper closeModal={closeModal}>
+            <TodoUpdate
+              updateItem={updateItem}
+              updateTodo={updateTodo}
+              setUpdateItem={setUpdateItem}
+            />
+          </DialogWrapper>
         </ReactModal>
       )}
     </div>

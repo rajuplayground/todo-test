@@ -1,6 +1,5 @@
 import "./App.css";
-import TodoList from "./TodoList";
-
+import TodoList from "../TodoList";
 import Modal from "react-modal";
 
 // Set the appElement to the root of your application
