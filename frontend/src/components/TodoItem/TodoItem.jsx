@@ -7,19 +7,19 @@ function TodoItem({ item, index, toggleItemStatus, editItem, deleteItem }) {
     >
       <button
         className="image-btn status"
-        onClick={() => toggleItemStatus(index)}
+        onClick={() => toggleItemStatus(item)}
       >
         {item.status === "DONE" ? <CheckCircle /> : <Circle />}
       </button>
       <span
         className="todo__title"
         onClick={() => {
-          item.status === "DONE" ? null : editItem(index);
+          item.status === "DONE" ? null : editItem(item);
         }}
       >
         {item.todo}
       </span>
-      <button className="image-btn delete" onClick={() => deleteItem(index)}>
+      <button className="image-btn delete" onClick={() => deleteItem(item)}>
         <Trash />
       </button>
     </li>

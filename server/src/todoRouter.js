@@ -4,7 +4,9 @@ import { prisma } from './db.js'
 const router = Router();
 
 router.get('/', async (req, res) => {
-    const alltodos = await prisma.todo.findMany()
+    const alltodos = await prisma.todo.findMany({
+        orderBy: { createdAt: 'desc' },
+    })
     res.status(200).json(alltodos)
 })
 

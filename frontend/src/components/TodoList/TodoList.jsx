@@ -4,124 +4,126 @@ import ReactModal from "react-modal";
 import TodoListItems from "../TodoListItems";
 import TodoUpdate from "../TodoUpdate";
 import DialogWrapper from "../DialogWrapper";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 
 function TodoList() {
-  const [items, setItems] = useState([]);
-  const [editIndex, setEditIndex] = useState(-1);
   const [showModal, setShowModal] = useState(false);
   const [updateItem, setUpdateItem] = useState(null);
 
-  async function fetchTodoList() {
-    const response = await fetch("http://localhost:4000/todos");
-    const todoList = await response.json();
-    setItems(todoList);
-  }
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchTodoList();
-  }, []);
+  const getTodos = async () => {
+    const response = await fetch("http://localhost:4000/todos");
+    const todos = response.json();
+    return todos;
+  };
+
+  const addTodo = async (todo) => {
+    const response = await fetch("http://localhost:4000/todos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(todo),
+    });
+    const data = response.json();
+    return data;
+  };
+
+  const updateTodo = async (todo) => {
+    const response = await fetch(`http://localhost:4000/todos/${todo.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(todo),
+    });
+    const data = response.json();
+    return data;
+  };
+
+  const deleteTodo = async (todo) => {
+    const response = await fetch(`http://localhost:4000/todos/${todo.id}`, {
+      method: "DELETE",
+    });
+    const data = response.json();
+    return data;
+  };
+
+  const { isLoading, error, data: items } = useQuery("todos", getTodos);
+  const { mutate: addMutate } = useMutation(addTodo);
+  const { mutate: updateMutate } = useMutation(updateTodo);
+  const { mutate: deleteMutate } = useMutation(deleteTodo);
 
   async function addItem(newItem, clearNewItem) {
     if (newItem.trim() === "") {
       return;
     }
 
-    const response = await fetch("http://localhost:4000/todos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ todo: newItem, status: "PENDING" }),
-    });
-
-    if (response.ok) {
-      const newTodo = await response.json();
-      setItems((prevItems) => [...prevItems, newTodo]);
-      clearNewItem();
-    }
+    await addMutate(
+      { todo: newItem, status: "PENDING" },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries("todos");
+          clearNewItem();
+        },
+      }
+    );
   }
 
-  async function toggleItemStatus(index) {
-    const todo = items[index];
+  async function toggleItemStatus(todo) {
     const newStatus = todo.status === "PENDING" ? "DONE" : "PENDING";
-    const updatedTodo = { ...todo, status: newStatus };
+    const modifiedTodo = { ...todo, status: newStatus };
 
-    const response = await fetch(`http://localhost:4000/todos/${todo.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedTodo),
+    await updateMutate(modifiedTodo, {
+      onSuccess: () => {
+        queryClient.invalidateQueries("todos");
+      },
     });
-
-    if (response.ok) {
-      const updatedTodoFromServer = await response.json();
-      setItems((prevItems) => {
-        const newItems = [...prevItems];
-        newItems[index] = updatedTodoFromServer;
-        return newItems;
-      });
-    }
   }
 
-  async function deleteItem(index) {
-    const todo = items[index];
-
-    const response = await fetch(`http://localhost:4000/todos/${todo.id}`, {
-      method: "DELETE",
-    });
-
-    if (response.ok) {
-      setItems((prevItems) => prevItems.filter((_, i) => i !== index));
-    }
-  }
-
-  async function editItem(index) {
-    const editTodo = items[index];
-    setEditIndex(index);
-    setUpdateItem(editTodo);
+  async function editItem(item) {
+    setUpdateItem(item);
     setShowModal(true);
   }
 
-  async function updateTodo(e) {
+  async function modifyTodo(e) {
     e.preventDefault();
+
     if (updateItem.todo.trim() === "") {
       return;
     }
 
-    const index = editIndex;
+    await updateMutate(updateItem, {
+      onSuccess: () => {
+        queryClient.invalidateQueries("todos");
+        closeModal();
+      },
+    });
+  }
 
-    const response = await fetch(
-      `http://localhost:4000/todos/${updateItem.id}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updateItem),
-      }
-    );
-
-    if (response.ok) {
-      const updatedTodoFromServer = await response.json();
-      setItems((prevItems) => {
-        const newItems = [...prevItems];
-        newItems[index] = updatedTodoFromServer;
-        return newItems;
-      });
-    }
-    closeModal();
+  async function deleteItem(todo) {
+    await deleteMutate(todo, {
+      onSuccess: () => {
+        queryClient.invalidateQueries("todos");
+      },
+    });
   }
 
   const closeModal = () => {
-    setEditIndex(-1);
     setUpdateItem(null);
     setShowModal(false);
   };
 
+  console.log(items);
+
   return (
     <div className="container max-width-wrapper">
       <TodoAdd addItem={addItem} />
-      <TodoListItems
-        items={items}
-        toggleItemStatus={toggleItemStatus}
-        editItem={editItem}
-        deleteItem={deleteItem}
-      />
+      {items && (
+        <TodoListItems
+          items={items}
+          toggleItemStatus={toggleItemStatus}
+          editItem={editItem}
+          deleteItem={deleteItem}
+        />
+      )}
       {updateItem && (
         <ReactModal
           isOpen={showModal}
@@ -132,7 +134,7 @@ function TodoList() {
           <DialogWrapper closeModal={closeModal}>
             <TodoUpdate
               updateItem={updateItem}
-              updateTodo={updateTodo}
+              updateTodo={modifyTodo}
               setUpdateItem={setUpdateItem}
             />
           </DialogWrapper>
