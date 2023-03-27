@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-
+import {Edit, Trash, CheckCircle, Circle} from 'react-feather'
 function TodoList() {
     const [items, setItems] = useState([]);
     const [newItem, setNewItem] = useState('');
@@ -97,7 +97,7 @@ function TodoList() {
         <div className="todo__items">
             <ul className="todo__list">
               {items.map((item, index) => (
-                <li key={item.id} className={`todo__listitem ${item.status === 'DONE' ? 'done' : ''}`}>
+                <li key={item.id} className={`todo__listitem ${item.status === 'DONE' ? 'todo__done' : ''}`}>
                   {item.editing ? (
                     <div className="todo__edit">
                       <input type="text" value={item.todo} onChange={e => updateTodoItem(e.target.value, index)} />
@@ -105,10 +105,10 @@ function TodoList() {
                     </div>
                   ) : (
                     <>
+                    <button className="image-btn status" onClick={() => toggleItemStatus(index)}>{item.status === 'DONE' ? <CheckCircle /> : <Circle />}</button>
                       <span className="todo__title">{item.todo}</span>
-                      <button className="btn status" onClick={() => toggleItemStatus(index)}>{item.status === 'DONE' ? 'Mark as pending' : 'Mark as done'}</button>
-                      <button className="btn edit" onClick={() => editItem(index)}>Edit</button>
-                      <button className="btn delete" onClick={() => deleteItem(index)}>Delete</button>
+                      <button className="image-btn edit" onClick={() => editItem(index)}><Edit /></button>
+                      <button className="image-btn delete" onClick={() => deleteItem(index)}><Trash /></button>
                     </>
                   )}
                 </li>
