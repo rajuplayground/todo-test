@@ -2,20 +2,22 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "type": "module",
+  "main": "dist/index.js",
   "scripts": {
     "migrate": "npx prisma migrate dev",
-    "dev": "nodemon src/index.js",
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
     "dev-with-migration": "npm run migrate && npm run dev"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^18.15.10",
     "morgan": "^1.10.0",
     "nodemon": "^2.0.22",
-    "prisma": "^4.11.0"
+    "prisma": "^4.11.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.2"
   },
   "dependencies": {
     "@prisma/client": "^4.11.0",
