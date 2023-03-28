@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import TodoAdd from "../TodoAdd";
 import ReactModal from "react-modal";
 import TodoListItems from "../TodoListItems";
@@ -111,10 +111,8 @@ function TodoList() {
     setShowModal(false);
   };
 
-  console.log(items);
-
   return (
-    <div className="container max-width-wrapper">
+    <div className="sm:w-[400px] md:w-[700px] mx-auto">
       <TodoAdd addItem={addItem} />
       {items && (
         <TodoListItems
@@ -129,7 +127,7 @@ function TodoList() {
           isOpen={showModal}
           onRequestClose={() => setShowModal(false)}
           contentLabel="Modal"
-          className="dialogModal"
+          className="grid place-content-center h-full"
         >
           <DialogWrapper closeModal={closeModal}>
             <TodoUpdate
