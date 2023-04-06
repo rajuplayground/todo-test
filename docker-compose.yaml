@@ -8,6 +8,8 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    environment:
+      API_URL: "http://backend"
     depends_on:
       backend:
         condition: service_healthy
@@ -25,6 +27,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    environment:
+      DATABASE_URL: "mysql://root:1234pass@db/todos"
     depends_on:
       db:
         condition: service_healthy
