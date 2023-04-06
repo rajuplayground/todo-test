@@ -1,4 +1,3 @@
-import "./App.css";
 import TodoList from "../TodoList";
 import Modal from "react-modal";
 import { QueryClient, QueryClientProvider } from "react-query";
